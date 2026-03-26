@@ -121,17 +121,17 @@ backgroundSize:  80%
 ---
 
 # But, in practice, 
-## Gradient based optimization fails...
+**Gradient based optimization often fails...**
 
- - Naive gradient based optimization is prone to overfitting and local minima.
+ - Naive gradient based optimization is prone to **overfitting and local minima**.
 
- - This approach can fail when the optimization landscape is too complex or highly non-convex. 
+ - This approach can fail when the optimization **landscape is too complex** or highly non-convex. 
  
- - In such case, the limit of the series $(\theta_{k})_k$ can depend on the choice of initial condition $\theta_{0}$. 
+ - In such case, the limit of the series $(\theta_{k})_k$ can **depend on the choice of initial condition $\theta_{0}$**. 
  
  <div v-click> 
 
- - Another drawback of this approach is that is does not provide uncertainty estimates on the parameters $\widehat{\theta}$.
+ - Another drawback of this approach is that is does not provide **uncertainty estimates** on the parameters $\widehat{\theta}$.
 
  </div>
 
@@ -255,16 +255,93 @@ MAP can be readily implemented from a pre-existing gradient-based optimization p
 
 # Bayesian inference with differentiable solvers
 
+**Bayesian inference** = estimating teh full posterior distribution $p(\theta | x_0)$.
+
+<div v-click>
+
+Can we use the solver **differentiability**  to explore the parameter space and estimate $p(\theta | x_0)$ ? 
+
+</div>
+
+<!--  We would like to use the fact that  $\mathcal M_{\theta}$ is differentiable and leverage gradient-based methods to  **estimate the full posterior distribution $p(\theta | x_0)$**. -->
+
+<div v-click>
+
+Existing methods for Bayesian inference with differentiable solvers : 
+
+- **Stochastic Variational Inference (SVI)**: uses gradient descent to approximate the posterior by optimizing a variational distribution $q(\theta)$ to minimize the KL divergence from the true posterior.
+- **Hamiltonian Monte Carlo (HMC):** uses gradients to propose samples in a way that explores the parameter space more efficiently than traditional MCMC methods.
+
+</div>
+
+<div v-click>
+
+Here, we will adopt SVI as its practical implementation can be seen as **an extension of gradient-based point estimation pipelines**. 
+
+SVI is also known to **scale efficiently to large problems** (high dimensionallity $\theta$), at the cost of only providing an approximate estimation of uncertainty.   
+
+</div>
 
 
 ---
 
 # Stochastic Variational inference (SVI)
 
+<br></br>
+
+<div v-click>
+
+-  **SVI** is a scalable approximate Bayesian inference method that transforms the problem of posterior inference into an **optimization problem**. 
+
+</div>
+
+<div v-click>
+
+- Instead of sampling from the posterior distribution (like MCMC), SVI aims at **approximating the true posterior distribution** $p(\theta | x_0)$ 
+- with a **tractable distribution $q_{\phi}(\theta)$**, typically from a family like Gaussian distributions. 
+
+</div>
+
+<div v-click>
+
+In what follows, we will start by defining $q_{\phi}(\theta)$, a variational **approximation of the posterior**, where $\phi$ is the set of variational parameters to be optimized. 
+
+The optimization procedure will then aim at **minimizing the Kullback-Leibler (KL)** divergence between $q_{\phi}(\theta)$ and $p(\theta | x_0)$, which is equivalent to maximizing the **Evidence Lower Bound (ELBO)**.
+
+</div>
+
 
 ---
 
 # Evidence Lower Bound (ELBO)
+
+The objective of SVI is to maximize the **Evidence Lower Bound (ELBO)**    
+
+$$ELBO(\phi) = \mathbb{E}_{q_{\phi}(\theta)}[\,\log \,p(x_0|\theta)\,] - KL\,(\,q_{\phi}(\theta)\,||\,p(\theta)\,)$$
+
+<div v-click>
+
+
+Using Bayes' theorem, one can show that maximizing the ELBO with respect to $q_{\phi}(\theta)$ is **equivalent to minimizing the KL divergence** between $q_{\phi}(\theta)$ and the true posterior $p(\theta | x_0)$.
+
+</div>
+
+<div v-click>
+
+The ELBO consists of two terms : 
+ - the **expected log-Likelihood** :  encourage $q_{\phi}(\theta)$ to match the reference data $x_0$ 
+ $$T_{d} \,(\phi)= \mathbb{E}_{q_{\phi}(\theta)}[\,\log \,p( x_0 | \theta )\,]$$
+ - the **KL divergence** will encourage $q_{\phi}(\theta)$ to stay close to the prior $p(\theta)$ therefore acting as a regularizer.
+$$T_{r} \,(\phi) =  KL\,(\,q_{\phi}(\theta)\,||\,p(\theta)\,)$$
+
+</div>
+
+<div v-click>
+
+**SVI** = a probabilistic generalisation of MAP for a prescribed variational family $q_{\phi}(\theta)$
+
+</div>
+
 
 
 ---
@@ -275,27 +352,163 @@ class: "text-center"
 # **3. Practical steps for calibrating parameters with SVI**
 
 
+---
+
+#  Steps for calibrating parameters with SVI
+
+<div v-click>
+
+**1. Choosing a family of variational distributions $q_{\phi}(\theta)$**
+
+ - We will start by defining $q_{\phi}(\theta)$, a variational **approximation of the posterior**, where $\phi$ is the set of variational parameters to be optimized.
+
+ - In what follows, as a simple starting point, we will choose $q_{\phi}(\theta)$ to be a **multivariate Gaussian distribution**.
+
+</div>
+
+<div v-click>
+
+**2. Minimizing the ELBO loss**
+
+ - Because we target simulators  $\mathcal M_{\theta}$ that are relatively expensive to run, we will use **mini-batches and stochastic gradient descent** for the minimization. 
+
+</div>
+
+<div v-click>
+
+**3. Extracting the posterior distribution of the parameters**
+
+ - After optimization of the ELBO loss, $\phi$ will contain the **means $\mu_k$** and the log **standard deviation $\Sigma$** of our approximate **posterior distribution** of the parameters $q_{\phi}(\theta)$. 
+
+</div>
 
 ---
 
-# Approximating the expected log-likelyhood term $T_{d}$
+# Approximating the expected log-likelyhood $T_{d}\,(\phi)$
 
+The first term of the ELBO loss is the **expected log-likelihood**, namely
+
+$$T_{d} \,(\phi)= \mathbb{E}_{q_{\phi}(\theta)}[\,\log \,p(x_0| \theta)\,]$$
+
+<div v-click>
+
+The notation $\mathbb{E}_{q_{\phi}(\theta)}[f(\theta)]$ refers to the **expectation with respect to the distribution $q_{\phi}(\theta)$**, it is simply an average weighted by the distribution $q_{\phi}(\theta)$
+
+$$\mathbb{E}_{q_{\phi}(\theta)}[f(\theta)] = \int f(\theta) \, q_{\phi}(\theta) \;d\theta$$
+
+</div>
+
+<div v-click>
+ 
+The expected log-likelihood can be approximated using **Monte Carlo sampling**:
+$$\mathbb{E}_{q(\theta)} \left[ \log p(x_0 | \theta) \right] \approx \frac{1}{S} \sum_{s=1}^S \log p(x_0 | \theta_s), \quad \theta_s \sim q(\theta)$$
+
+where $S$ is the **number of samples** drawn from $q_{\phi}(\theta)$.
+
+</div>
 
 ---
 
 # Proposal distribution and the renormalization trick
 
+
+We parameterize our proposal posterior $q_{\phi}(\theta)$ as a **multivariate gaussian distribution** : 
+
+$$q_{\phi}(\theta)\sim \mathcal N(\mu, \Sigma)$$
+
+where $\mu \in \mathbb{R}^p$ is the mean vector and $\Sigma \in \mathbb{R}^{p\,\times\, p}$ is the covariance matrix of the distribution
+
+<div v-click>
+
+For sampling $\theta_s\sim q(\theta)$, we will use the so-called **renormalization trick**. This is a key ingredient of SVI which will ensure that our approximation of the log likelyhood will be differentiable with respect to $\mu$ and $\Sigma$.
+
+</div>
+
+<div v-click>
+ 
+For given $\mu$ and $\Sigma$, $\theta_s$ will be drawn as  $\theta_s = \mu + L \,\epsilon$, where **$\epsilon$ is a random noise vector** from a standard normal distribution $\epsilon \sim \mathcal{N}(0, I)$, and $L$ is the lower triangular matrix such that $LL^T = \Sigma$, following the Cholesky decomposition of $\Sigma$. 
+
+</div>
+
+<div v-click>
+
+For **diagonal covariance matrix $\Sigma=\sigma$**, the sampling will simply be obtained as $\theta_s = \mu + \sigma \odot \epsilon$, where $\odot$ refers to the element-wise (Hadamard) product. 
+
+</div>
+
 ---
 
 # KL divergence term of the ELBO loss $T_{r} \,(\phi)$
 
+The second term of the ELBO loss is the **Kullback-Leibler divergence** between the proposal distribution $q_{\phi}(\theta)$ and the prior distribution $p(\theta)$ :
+$$T_{r} \,(\phi) = KL\,(\,q_{\phi}(\theta)\,||\,p(\theta)\,)=\mathbb{E}[\,\log \,\frac{q_{\phi}(\theta)}{p(\theta)}\,]$$
+
+<div v-click>
+
+
+<!--   
+The KL divergence term for a Gaussian variational distribution $q_{\phi}(\theta) = \mathcal{N}(\mu, \sigma^2)$ and a Gaussian prior $p(\theta) = \mathcal{N}(\mu_0, \sigma_0^2)$ is given by:
+
+
+$$\text{KL}(q(\theta) \| p(\theta)) = \frac{1}{2} \left( \text{tr}(\Sigma_0^{-1} \Sigma) + (\mu - \mu_0)^T \Sigma_0^{-1} (\mu - \mu_0) - \log \det(\Sigma_0^{-1} \Sigma) - d \right)$$
+
+where:
+
+ - $\mu$ and $\Sigma = \text{diag}(\sigma^2)$ are the mean and covariance of $q_{\phi}(\theta)$.
+ - $\mu_0$​ and $\Sigma_0 = \text{diag}(\sigma_0^2)$ are the mean and covariance of the prior $p(\theta)$.
+ - $d$ is the dimensionality of $\theta$.
+
+-->
+</div>
+
+<div v-click>
+
+This term can be **computed analytically for Gaussian distributions** (and uniform priors).
+
+</div>
+
+<div v-click>
+
+If $q_{\phi}(\theta)$ and $p(\theta)$ are both diagonal Gaussians (i.e., independent dimensions), this simplifies to:
+
+$$\text{KL}(q(\theta) \| p(\theta)) = \sum_{i=1}^d \left( \log \frac{\sigma_0^{(i)}}{\sigma^{(i)}} + \frac{(\sigma^{(i)})^2 + (\mu^{(i)} - \mu_0^{(i)})^2}{2 (\sigma_0^{(i)})^2} - \frac{1}{2} \right)$$
+
+where $\mu^{(i)}$ and $\sigma^{(i)}$ are the mean and standard deviation of the $i$-th dimension of $q_{\phi}(\theta)$, and $\mu_0^{(i)}$ and $\sigma_0^{(i)}$ are the mean and standard deviation of the $i$-th dimension of $p(\theta)$
+
+
+</div>
 
 ---
 
-# In practice 
 
-pseudo-code
+```python
+import optax
 
+# Initialize variational parameters (mu, log_sigma)
+d = len(x0)  # Dimensionality of theta
+mu = jnp.zeros(d)
+log_sigma = jnp.zeros(d)
+params = (mu, log_sigma)
+
+# Optimizer
+optimizer = optax.adam(learning_rate=0.01)
+opt_state = optimizer.init(params)
+
+# Optimization loop
+@jax.jit
+def update(params, opt_state, x0):
+    grads = jax.grad(elbo)(params, x0)
+    updates, opt_state = optimizer.update(grads, opt_state)
+    params = optax.apply_updates(params, updates)
+    return params, opt_state
+
+# Run SVI
+for step in range(1000):
+    params, opt_state = update(params, opt_state, x0)
+    if step % 100 == 0:
+        current_elbo = elbo(params, x0)
+        print(f"Step {step}, ELBO: {current_elbo}")
+```
 ---
 layout: center
 class: "text-center"
