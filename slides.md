@@ -97,12 +97,18 @@ class: my-cool-content-on-the-left
 
 $$\widehat{\theta} = \arg\min_{\theta} J(\theta) $$
 
+<div v-click> 
 
 with gradient based optimization by formulating a series $(\theta_{k})_k$ such that 
 
 $$\theta_{k+1} = \mathcal F(\theta_{k}, \nabla_\theta \,J(\theta_{k}) )$$
 
+</div>
+<div v-click> 
+
 where $\mathcal F$ is an appropriately chosen **minimizer** adapted to the topology and regularity of $J(\theta)$.
+
+</div>
 
 <!--  adapted to the topology and regularity of $J(\theta)$.  -->
 
@@ -114,7 +120,8 @@ image: ./figures/image-44-1024x867.png
 backgroundSize:  80%
 ---
 
-# In practice, gradient based optimization fails...
+# But, in practice, 
+## Gradient based optimization fails...
 
  - Naive gradient based optimization is prone to overfitting and local minima.
 
@@ -196,17 +203,53 @@ class: "text-center"
 
 ---
 
-# Bayesian interpretation of gradient-based optimization
+# Bayesian interpretation of gradient-based optimization : MLE 
 
-In the Bayesian formalism, the naive gradient-based optimization  relates to the so-called **Maximum Likelihood Estimation (MLE)**. 
+In the Bayesian formalism, the naive gradient-based optimization relates to the so-called **Maximum Likelihood Estimation (MLE)**. 
 
-MLE aims at finding the parameters that make the reference target data $x_0$ as probable as possible under the model $\mathcal M_{\theta}$, namely finding the parameters $\theta_{MLE}$ that maximize the log-likelihood of the observed data $x_0$: 
+
+<div v-click> 
+
+MLE aims at finding the parameters that make the reference target data $x_0$ as probable as possible under the model $\mathcal M_{\theta}$, namely finding the parameters $\theta_{MLE}$ that **maximize the log-likelihood of the observed data $x_0$**: 
 
 $$\theta_{MLE}= \arg\max_\theta \, \log p(x_0 | \theta)$$
 
-For gaussian likelyhoods, it can easily be shown that maximizing the log-likelihood is equivalent to minimizing the Mean Square Error (MSE) of model prediction vs the reference target, assuming all the observation in the target reference are independent. 
+</div>
 
-Interestingly, as MLE does not incorporate any prior knowledge about $\theta$ it can lead to physically unrealistic estimates, and it is also prone to overfitting.
+<div v-click> 
+
+
+- For gaussian likelyhoods,  **maximizing the log-likelihood is equivalent to minimizing the Mean Square Error (MSE)** of model prediction vs the reference target, assuming all the observation in the target reference are independent. 
+
+- As MLE does not incorporate any prior knowledge about $\theta$ it can lead to physically unrealistic estimates, and it is also prone to overfitting.
+
+</div>
+
+
+---
+
+# Bayesian interpretation of gradient-based optimization : MAP
+
+Naive gradient-based optimization also relates to **Maximum A Posteriori (MAP)** estimation, which aims at providing a point estimate of the parameters $\theta_{\text{MAP}}$ which maximize the log-posterior
+
+$$\theta_{\text{MAP}} = \arg\max_\theta \, \log p(\theta | x_0)$$ 
+
+<div v-click> 
+
+Using Bayes' theorem, one can show that MAP is essentially **a regularization of MLE**
+$$\theta_{\text{MAP}} = \arg\max_\theta \, \log p(\theta | x_0) = \arg\max_\theta \, \log p(x_0 | \theta) + \log p(\theta)$$
+
+<!--   Note that MAP reduces to MLE if the prior $p(\theta)$ is uniform (i.e., $\log p(\theta)$ is constant and can be ignored).  -->
+
+</div>
+
+<div v-click> 
+
+MAP can be readily implemented from a pre-existing gradient-based optimization pipeline, 
+- **assuming a uniform prior** (but bounded between max and min values) : MAP is equivalent to imposing a clipping on parameters $\theta_k$ after each iteration of the minimizer.  
+- **assuming a gaussian prior** : MAP is equivalent to imposing the so-called *background* term used in variational data assimilation $\sum\limits_{j}^{p}\frac{1}{\sigma_j}|\theta^j-\theta_{0}^j|^2$
+
+</div>
 
 ---
 
