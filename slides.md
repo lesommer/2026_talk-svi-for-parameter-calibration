@@ -221,6 +221,10 @@ $$\theta_{MLE}= \arg\max_\theta \, \log p(x_0 | \theta)$$
 
 - For gaussian likelyhoods,  **maximizing the log-likelihood is equivalent to minimizing the Mean Square Error (MSE)** of model prediction vs the reference target, assuming all the observation in the target reference are independent. 
 
+</div>
+
+<div v-click> 
+
 - As MLE does not incorporate any prior knowledge about $\theta$ it can lead to physically unrealistic estimates, and it is also prone to overfitting.
 
 </div>
@@ -246,6 +250,11 @@ $$\theta_{\text{MAP}} = \arg\max_\theta \, \log p(\theta | x_0) = \arg\max_\thet
 <div v-click> 
 
 MAP can be readily implemented from a pre-existing gradient-based optimization pipeline, 
+
+</div>
+
+<div v-click> 
+ 
 - **assuming a uniform prior** (but bounded between max and min values) : MAP is equivalent to imposing a clipping on parameters $\theta_k$ after each iteration of the minimizer.  
 - **assuming a gaussian prior** : MAP is equivalent to imposing the so-called *background* term used in variational data assimilation $\sum\limits_{j}^{p}\frac{1}{\sigma_j}|\theta^j-\theta_{0}^j|^2$
 
@@ -255,7 +264,7 @@ MAP can be readily implemented from a pre-existing gradient-based optimization p
 
 # Bayesian inference with differentiable solvers
 
-**Bayesian inference** = estimating teh full posterior distribution $p(\theta | x_0)$.
+**Bayesian inference** = estimating the full posterior distribution $p(\theta | x_0)$.
 
 <div v-click>
 
@@ -277,6 +286,10 @@ Existing methods for Bayesian inference with differentiable solvers :
 <div v-click>
 
 Here, we will adopt SVI as its practical implementation can be seen as **an extension of gradient-based point estimation pipelines**. 
+
+</div>
+
+<div v-click> 
 
 SVI is also known to **scale efficiently to large problems** (high dimensionallity $\theta$), at the cost of only providing an approximate estimation of uncertainty.   
 
@@ -306,7 +319,17 @@ SVI is also known to **scale efficiently to large problems** (high dimensionalli
 
 In what follows, we will start by defining $q_{\phi}(\theta)$, a variational **approximation of the posterior**, where $\phi$ is the set of variational parameters to be optimized. 
 
-The optimization procedure will then aim at **minimizing the Kullback-Leibler (KL)** divergence between $q_{\phi}(\theta)$ and $p(\theta | x_0)$, which is equivalent to maximizing the **Evidence Lower Bound (ELBO)**.
+</div>
+
+<div v-click> 
+
+The optimization procedure will then aim at **minimizing the Kullback-Leibler (KL)** divergence between $q_{\phi}(\theta)$ and $p(\theta | x_0)$, 
+
+</div>
+
+<div v-click> 
+
+...which is equivalent to maximizing the **Evidence Lower Bound (ELBO)**.
 
 </div>
 
@@ -538,7 +561,7 @@ class: "text-center"
 
 ####  **Stochastic Variational Inference (SVI)**
 
- - Approximates the posterior $p(\theta|x_0)$$ with a tractable distribution $q_\phi(\theta)$ (e.g., Gaussian).
+ - Approximates the posterior $p(\theta|x_0)$ with a tractable distribution $q_\phi(\theta)$ (e.g., Gaussian).
 
  - Optimizes the Evidence Lower Bound (ELBO) using mini-batches and the reparameterization trick for differentiable computation.
 
