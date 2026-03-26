@@ -522,7 +522,30 @@ class: "text-center"
 
 # Wrappping-up
 
-- ...
+**Goal**: Calibrate parameters $\theta$ of a differentiable physics-based solver $\mathcal{M}_\theta$​ to match reference data $x_0$​, combining **gradient-based optimization** and **Bayesian inference** to estimate the full posterior distribution of parameters.
+
+<div v-click>
+
+ - Gradient-based optimization (MLE/MAP) provides point estimates but **no uncertainty quantification** and can be **sensitive to initialization**.
+
+ - Full Bayesian inference (e.g., MCMC) is **computationally expensive** for complex models.
+
+
+</div>
+
+<div v-click>
+
+
+####  **Stochastic Variational Inference (SVI)**
+
+ - Approximates the posterior $p(\theta|x_0)$$ with a tractable distribution $q_\phi(\theta)$ (e.g., Gaussian).
+
+ - Optimizes the Evidence Lower Bound (ELBO) using mini-batches and the reparameterization trick for differentiable computation.
+
+ - Advantages: Scalability, easy integration into existing pipelines (JAX/Optax).
+
+
+</div>
 
 
 
